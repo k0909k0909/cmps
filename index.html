@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>コンパスカスタム用</title>
     <style>
-        body { font-family: sans-serif; background-color: #f0f8ff; color: #333; text-align: center; padding: 20px; }
+        body { font-family: sans-serif; background-color: #f0f8ff; color: #333; text-align: center; padding: 20px; margin: 0; }
         .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         h1 { font-size: 24px; color: #333; }
         
@@ -34,10 +34,9 @@
         .action-buttons { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
         .sub-buttons-container { display: flex; gap: 10px; }
         
-        .btn-main, .btn-gray { color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.2s; width: 100%; box-sizing: border-box;}
-        .btn-main { background-color: #ff4500; }
-        .btn-gray { background-color: #a0a0a0; margin-top: 5px; }
-
+        /* ボタンのデザイン（2on2用の縦幅を減らしてスッキリさせています） */
+        .btn-main { background-color: #ff4500; color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.2s; width: 100%; box-sizing: border-box;}
+        .btn-gray { background-color: #a0a0a0; color: white; border: none; padding: 10px; font-size: 15px; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.2s; width: 100%; box-sizing: border-box; margin-top: 5px;}
         .btn-sub { flex: 1; background-color: #008CBA; color: white; border: none; padding: 12px; font-size: 15px; border-radius: 5px; cursor: pointer; transition: 0.2s;}
         
         .btn-copy { background-color: #333; color: white; border: none; padding: 12px; font-size: 15px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 20px; font-weight: bold; transition: 0.3s;}
@@ -85,7 +84,14 @@
 
     <p style="font-size: 14px; color: #555;">参加プレイヤー名を入力</p>
 
-    <div id="playerList" class="player-inputs"></div>
+    <div id="playerList" class="player-inputs">
+        <div class="input-group"><input type="text" class="playerName" placeholder="1" value=""><button type="button" class="remove-btn" onclick="removePlayerInput(this)">削除</button></div>
+        <div class="input-group"><input type="text" class="playerName" placeholder="2" value=""><button type="button" class="remove-btn" onclick="removePlayerInput(this)">削除</button></div>
+        <div class="input-group"><input type="text" class="playerName" placeholder="3" value=""><button type="button" class="remove-btn" onclick="removePlayerInput(this)">削除</button></div>
+        <div class="input-group"><input type="text" class="playerName" placeholder="4" value=""><button type="button" class="remove-btn" onclick="removePlayerInput(this)">削除</button></div>
+        <div class="input-group"><input type="text" class="playerName" placeholder="5" value=""><button type="button" class="remove-btn" onclick="removePlayerInput(this)">削除</button></div>
+        <div class="input-group"><input type="text" class="playerName" placeholder="6" value=""><button type="button" class="remove-btn" onclick="removePlayerInput(this)">削除</button></div>
+    </div>
     <button type="button" class="add-btn" onclick="addPlayerInput()">＋ 枠を増やす</button>
 
     <details class="settings-area">
@@ -94,7 +100,29 @@
             <button type="button" class="btn-small" onclick="toggleAllMaps(true)">すべてON</button>
             <button type="button" class="btn-small" onclick="toggleAllMaps(false)">すべてOFF</button>
         </div>
-        <div id="mapCheckboxes" class="checkbox-grid"></div>
+        
+        <div id="mapCheckboxes" class="checkbox-grid">
+            <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="でらクランクストリート" checked>でらクランクストリート</label>
+            <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="けっこいスターパーク" checked>けっこいスターパーク</label>
+            <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="東西たかさん広場" checked>東西たかさん広場</label>
+            <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="グレートウォール" checked>グレートウォール</label>
+            <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="立体交差のある風景" checked>立体交差のある風景</label>
+            <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="光と闇のライブステージ" checked>光と闇のライブステージ</label>
+            <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="妖華帝都ケルパーズの散歩道" checked>妖華帝都ケルパーズの散歩道</label>
+            <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="ちゅら島リゾート" checked>ちゅら島リゾート</label>
+            <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="って〜！つっぺる工事現場" checked>って〜！つっぺる工事現場</label>
+            <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="太鼓で祭りだドーン！" checked>太鼓で祭りだドーン！</label>
+            <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="おいでやす鳥居通り" checked>おいでやす鳥居通り</label>
+            <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="かけだせ！じっぱか城" checked>かけだせ！じっぱか城</label>
+            <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="どっひゃぁ〜！なっから遺跡" checked>どっひゃぁ〜！なっから遺跡</label>
+            <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="Castle of the Silver Feet" checked>Castle of the Silver Feet</label>
+            <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="Hello :-) irregular World" checked>Hello :-) irregular World</label>
+            <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="なまらモーモーパーク" checked>なまらモーモーパーク</label>
+            <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="おっかねぇ！氷焔神域ケイオスブルク" checked>おっかねぇ！氷焔神域ケイオスブルク</label>
+            <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="バリバリ！てげてげモーターウェイ" checked>バリバリ！てげてげモーターウェイ</label>
+            <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="いこっさ！ダイダイダイナソー博物館" checked>いこっさ！ダイダイダイナソー博物館</label>
+            <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="【ストヘス区】急襲戦闘区域">【ストヘス区】急襲戦闘区域</label>
+        </div>
         
         <div class="custom-map-area">
             <div id="customMapList"></div>
@@ -110,7 +138,7 @@
             <button type="button" class="btn-sub" onclick="decideTeamOnly(3)">チーム分けのみ行う</button>
             <button type="button" class="btn-sub" onclick="decideMapOnly()">マップ抽選のみ行う</button>
         </div>
-        <button type="button" class="btn-gray" onclick="decideBoth(2)">2vs2で抽選</button>
+        <button type="button" class="btn-gray" onclick="decideBoth(2)">2on2で抽選</button>
     </div>
 
     <div id="resultArea" class="result hidden">
@@ -138,50 +166,15 @@
 </div>
 
 <script>
-    const mapData = [
-        { name: "でらクランクストリート", defaultOn: true },
-        { name: "けっこいスターパーク", defaultOn: true },
-        { name: "東西たかさん広場", defaultOn: true },
-        { name: "グレートウォール", defaultOn: true },
-        { name: "立体交差のある風景", defaultOn: true },
-        { name: "光と闇のライブステージ", defaultOn: true },
-        { name: "妖華帝都ケルパーズの散歩道", defaultOn: true },
-        { name: "ちゅら島リゾート", defaultOn: true },
-        { name: "って〜！つっぺる工事現場", defaultOn: true },
-        { name: "太鼓で祭りだドーン！", defaultOn: true },
-        { name: "おいでやす鳥居通り", defaultOn: true },
-        { name: "かけだせ！じっぱか城", defaultOn: true },
-        { name: "どっひゃぁ〜！なっから遺跡", defaultOn: true },
-        { name: "Castle of the Silver Feet", defaultOn: true },
-        { name: "Hello :-) irregular World", defaultOn: true },
-        { name: "なまらモーモーパーク", defaultOn: true },
-        { name: "おっかねぇ！氷焔神域ケイオスブルク", defaultOn: true },
-        { name: "バリバリ！てげてげモーターウェイ", defaultOn: true },
-        { name: "いこっさ！ダイダイダイナソー博物館", defaultOn: true },
-        { name: "【ストヘス区】急襲戦闘区域", defaultOn: false }
-    ];
-
     window.onload = function() {
-        const container = document.getElementById('mapCheckboxes');
-        mapData.forEach(map => {
-            const label = document.createElement('label');
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.className = 'map-checkbox normal-map-checkbox';
-            checkbox.value = map.name;
-            checkbox.checked = map.defaultOn;
-            label.appendChild(checkbox);
-            label.appendChild(document.createTextNode(map.name));
-            container.appendChild(label);
-        });
-
-        for(let i = 0; i < 6; i++) {
-            addPlayerInput();
-        }
-
-        const savedUrl = localStorage.getItem('compassWebhookUrl');
-        if(savedUrl) {
-            document.getElementById('webhookUrl').value = savedUrl;
+        // エラーによる停止を防ぐため、処理を安全に実行します
+        try {
+            const savedUrl = localStorage.getItem('compassWebhookUrl');
+            if(savedUrl) {
+                document.getElementById('webhookUrl').value = savedUrl;
+            }
+        } catch (error) {
+            console.log("設定の読み込みをスキップしました");
         }
     };
 
@@ -191,24 +184,43 @@
             alert("URLが入力されていません！");
             return;
         }
-        localStorage.setItem('compassWebhookUrl', url);
-        const status = document.getElementById('webhookStatus');
-        status.innerText = "✅ 保存しました";
-        status.style.color = "#2e8b57";
-        status.style.display = 'inline';
-        setTimeout(() => { status.style.display = 'none'; }, 2000);
+        try {
+            localStorage.setItem('compassWebhookUrl', url);
+            const status = document.getElementById('webhookStatus');
+            status.innerText = "✅ 保存しました";
+            status.style.color = "#2e8b57";
+            status.style.display = 'inline';
+            setTimeout(() => { status.style.display = 'none'; }, 2000);
+        } catch (error) {
+            alert("エラー: お使いのブラウザでは設定を保存できません。");
+        }
     }
 
     function resetWebhook() {
-        localStorage.removeItem('compassWebhookUrl');
-        document.getElementById('webhookUrl').value = '';
-        const status = document.getElementById('webhookStatus');
-        status.innerText = "🗑️ リセット完了";
-        status.style.color = "#cc0000";
-        status.style.display = 'inline';
-        setTimeout(() => { status.style.display = 'none'; }, 2000);
+        try {
+            localStorage.removeItem('compassWebhookUrl');
+            document.getElementById('webhookUrl').value = '';
+            const status = document.getElementById('webhookStatus');
+            status.innerText = "🗑️ リセット完了";
+            status.style.color = "#cc0000";
+            status.style.display = 'inline';
+            setTimeout(() => { status.style.display = 'none'; }, 2000);
+        } catch (error) {}
     }
 
+    // プレイヤー枠を削除する処理
+    function removePlayerInput(btn) {
+        const playerList = document.getElementById('playerList');
+        if (document.querySelectorAll('.input-group').length <= 4) {
+            showError("⚠️ プレイヤー枠は最低4枠必要です！");
+            setTimeout(hideError, 2000);
+            return;
+        }
+        playerList.removeChild(btn.parentNode);
+        updatePlayerPlaceholders();
+    }
+
+    // プレイヤー枠を追加する処理
     function addPlayerInput() {
         const playerList = document.getElementById('playerList');
         const div = document.createElement('div');
@@ -223,15 +235,7 @@
         removeBtn.type = 'button';
         removeBtn.className = 'remove-btn';
         removeBtn.innerText = '削除';
-        removeBtn.onclick = function() { 
-            if (document.querySelectorAll('.input-group').length <= 4) {
-                showError("⚠️ プレイヤー枠は最低4枠必要です！");
-                setTimeout(hideError, 2000);
-                return;
-            }
-            playerList.removeChild(div);
-            updatePlayerPlaceholders();
-        };
+        removeBtn.onclick = function() { removePlayerInput(this); };
         
         div.appendChild(input);
         div.appendChild(removeBtn);
@@ -289,4 +293,185 @@
         container.appendChild(div);
     }
 
-    function getActiveMaps
+    function getActiveMaps() {
+        let active = [];
+        document.querySelectorAll('.normal-map-checkbox:checked').forEach(cb => {
+            active.push(cb.value);
+        });
+        document.querySelectorAll('.custom-map-checkbox:checked').forEach(cb => {
+            const inputVal = cb.nextElementSibling.value.trim();
+            if(inputVal !== '') active.push(inputVal);
+        });
+        return active;
+    }
+
+    function toggleAllMaps(state) {
+        document.querySelectorAll('.map-checkbox').forEach(cb => cb.checked = state);
+    }
+
+    function shuffleArray(array) {
+        const arr = [...array];
+        for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+    }
+
+    function showError(message) {
+        const errEl = document.getElementById('errorMessage');
+        errEl.innerText = message;
+        errEl.style.display = 'block';
+    }
+    
+    function hideError() {
+        document.getElementById('errorMessage').style.display = 'none';
+    }
+
+    function generateTeam(teamSize) {
+        hideError();
+        const players = getValidPlayers();
+        const requiredPlayers = teamSize * 2;
+        
+        if (players.length < requiredPlayers) {
+            showError(`⚠️ プレイヤー名は最低${requiredPlayers}人分入力してください！(現在: ${players.length}人)`);
+            return false;
+        }
+
+        const shuffled = shuffleArray(players);
+        const selectedPlayers = shuffled.slice(0, requiredPlayers);
+        const excluded = shuffled.slice(requiredPlayers);
+
+        const blueTeam = selectedPlayers.slice(0, teamSize);
+        const redTeam = selectedPlayers.slice(teamSize, requiredPlayers);
+
+        document.getElementById('blueTeam').innerHTML = blueTeam.map(name => `<li>${name}</li>`).join('');
+        document.getElementById('redTeam').innerHTML = redTeam.map(name => `<li>${name}</li>`).join('');
+        
+        const excludedEl = document.getElementById('excludedPlayers');
+        excludedEl.innerText = excluded.length > 0 ? "👀 観戦/お休み: " + excluded.join(" , ") : "";
+        return true;
+    }
+
+    function generateMap() {
+        hideError();
+        const activeMaps = getActiveMaps();
+        if (activeMaps.length === 0) {
+            showError("⚠️ マップが1つも選択されていません（自由枠の場合は文字を入力してください）");
+            return false;
+        }
+        const randomMap = activeMaps[Math.floor(Math.random() * activeMaps.length)];
+        document.getElementById('selectedMap').innerText = randomMap;
+        return true;
+    }
+
+    function updateDisplay() {
+        document.getElementById('resultArea').classList.remove('hidden');
+        document.getElementById('sendDiscordBtn').classList.remove('hidden'); 
+        document.getElementById('copyBtn').classList.remove('hidden'); 
+        
+        const teamArea = document.getElementById('teamResultArea');
+        const mapArea = document.getElementById('mapResultArea');
+        
+        if (!teamArea.classList.contains('hidden') && !mapArea.classList.contains('hidden')) {
+            mapArea.style.borderTop = "2px dashed #ccc";
+        } else {
+            mapArea.style.borderTop = "none";
+        }
+    }
+
+    function decideBoth(size) {
+        hideError();
+        if (getActiveMaps().length === 0) { showError("⚠️ マップが1つも選択されていません！"); return; }
+        if (!generateTeam(size)) return;
+        generateMap();
+        document.getElementById('teamResultArea').classList.remove('hidden');
+        document.getElementById('mapResultArea').classList.remove('hidden');
+        updateDisplay();
+    }
+
+    function decideTeamOnly(size) {
+        if (!generateTeam(size)) return;
+        document.getElementById('teamResultArea').classList.remove('hidden');
+        updateDisplay();
+    }
+
+    function decideMapOnly() {
+        if (!generateMap()) return;
+        document.getElementById('mapResultArea').classList.remove('hidden');
+        updateDisplay();
+    }
+
+    function createResultText() {
+        let text = "【チーム分け】\n";
+        const teamArea = document.getElementById('teamResultArea');
+        const mapArea = document.getElementById('mapResultArea');
+
+        if (!teamArea.classList.contains('hidden')) {
+            const bluePlayers = Array.from(document.getElementById('blueTeam').children).map(li => li.innerText).join('、');
+            const redPlayers = Array.from(document.getElementById('redTeam').children).map(li => li.innerText).join('、');
+            const excluded = document.getElementById('excludedPlayers').innerText;
+            text += `🟦 青: ${bluePlayers}\n`;
+            text += `🟥 赤: ${redPlayers}\n`;
+            if (excluded !== "") text += `${excluded}\n`;
+        }
+
+        if (!mapArea.classList.contains('hidden')) {
+            const mapName = document.getElementById('selectedMap').innerText;
+            text += `🗺️ マップ: ${mapName}\n`;
+        }
+        return text;
+    }
+
+    function sendToDiscord() {
+        const webhookUrl = document.getElementById('webhookUrl') ? document.getElementById('webhookUrl').value : localStorage.getItem('compassWebhookUrl');
+        if(!webhookUrl || webhookUrl === "") {
+            alert("⚠️ 上の「⚙️ Discord自動送信の設定」からWebhook URLを保存してください！");
+            return;
+        }
+
+        const textToSend = createResultText();
+        const btn = document.getElementById('sendDiscordBtn');
+        const originalText = btn.innerText;
+        btn.innerText = "送信中...";
+
+        fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: textToSend })
+        })
+        .then(response => {
+            if(response.ok) {
+                btn.innerText = "✅ 送信成功！Discordを確認してください";
+                btn.style.backgroundColor = "#4CAF50";
+            } else {
+                alert("送信に失敗しました。Webhook URLが間違っていないか確認してください。");
+                btn.innerText = originalText;
+            }
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.backgroundColor = "";
+            }, 3000);
+        })
+        .catch(err => {
+            alert("通信エラーが発生しました。");
+            btn.innerText = originalText;
+        });
+    }
+
+    function copyToClipboard() {
+        const textToCopy = createResultText();
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            const btn = document.getElementById('copyBtn');
+            const originalText = btn.innerText;
+            btn.innerText = "✅ コピーしました！";
+            btn.style.backgroundColor = "#4CAF50";
+            setTimeout(() => { btn.innerText = originalText; btn.style.backgroundColor = ""; }, 2000);
+        }).catch(err => {
+            alert("コピーに失敗しました。");
+        });
+    }
+</script>
+
+</body>
+</html>
