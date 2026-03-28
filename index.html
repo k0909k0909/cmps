@@ -11,8 +11,6 @@
         
         button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 
-        .mode-buttons { display: flex; gap: 10px; margin-bottom: 15px; }
-        
         .player-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; text-align: left; }
         .input-group { display: flex; align-items: center; }
         .input-group input { flex-grow: 1; padding: 8px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px; width: 100%; box-sizing: border-box;}
@@ -80,10 +78,7 @@
         </div>
     </details>
 
-    <div class="mode-buttons">
-        <button type="button" class="btn-small" style="background-color: #f39c12; flex: 1; padding: 10px;" onclick="setMode(4)">2on2用 (4枠)</button>
-        <button type="button" class="btn-small" style="background-color: #3498db; flex: 1; padding: 10px;" onclick="setMode(6)">標準 (6枠)</button>
-    </div>
+    <p style="font-size: 14px; color: #555;">参加プレイヤー名を入力</p>
 
     <div id="playerList" class="player-inputs"></div>
     <button type="button" class="add-btn" onclick="addPlayerInput()">＋ 枠を増やす</button>
@@ -105,10 +100,13 @@
     <div id="errorMessage"></div>
 
     <div class="action-buttons">
-        <button type="button" class="btn-main" onclick="decideBoth()">チーム分け ＆ マップ抽選を同時に行う</button>
+        <button type="button" class="btn-main" onclick="decideBoth(3)">チーム分け ＆ マップ抽選を同時に行う</button>
         <div class="sub-buttons-container">
-            <button type="button" class="btn-sub" onclick="decideTeamOnly()">チーム分けのみ行う</button>
+            <button type="button" class="btn-sub" onclick="decideTeamOnly(3)">チーム分けのみ行う</button>
             <button type="button" class="btn-sub" onclick="decideMapOnly()">マップ抽選のみ行う</button>
+        </div>
+        <div style="text-align: right; margin-top: 5px;">
+            <button type="button" class="btn-small" style="background-color: #f39c12; padding: 6px 12px;" onclick="decideBoth(2)">🎁 2vs2で抽選 (おまけ)</button>
         </div>
     </div>
 
@@ -116,11 +114,11 @@
         <div id="teamResultArea" class="hidden">
             <div class="teams-container">
                 <div class="team-box blue">
-                    <h3 class="team-blue">🟦 青チーム</h3>
+                    <h3 class="team-blue">🟦 青</h3>
                     <ul id="blueTeam"></ul>
                 </div>
                 <div class="team-box red">
-                    <h3 class="team-red">🟥 赤チーム</h3>
+                    <h3 class="team-red">🟥 赤</h3>
                     <ul id="redTeam"></ul>
                 </div>
             </div>
@@ -206,22 +204,6 @@
         status.style.color = "#cc0000";
         status.style.display = 'inline';
         setTimeout(() => { status.style.display = 'none'; }, 2000);
-    }
-
-    function setMode(num) {
-        const currentInputs = document.querySelectorAll('.input-group');
-        if (currentInputs.length > num) {
-            for (let i = currentInputs.length - 1; i >= num; i--) {
-                currentInputs[i].remove();
-            }
-        } else if (currentInputs.length < num) {
-            const diff = num - currentInputs.length;
-            for (let i = 0; i < diff; i++) {
-                addPlayerInput();
-            }
-        }
-        updatePlayerPlaceholders();
-        hideError();
     }
 
     function addPlayerInput() {
@@ -339,23 +321,22 @@
         document.getElementById('errorMessage').style.display = 'none';
     }
 
-    function generateTeam() {
+    function generateTeam(teamSize) {
         hideError();
         const players = getValidPlayers();
+        const requiredPlayers = teamSize * 2;
         
-        if (players.length < 4) {
-            showError("⚠️ プレイヤー名は最低4人分入力してください！(現在: " + players.length + "人)");
+        if (players.length < requiredPlayers) {
+            showError(`⚠️ プレイヤー名は最低${requiredPlayers}人分入力してください！(現在: ${players.length}人)`);
             return false;
         }
 
         const shuffled = shuffleArray(players);
-        const matchCount = Math.min(players.length, 6);
-        const selectedPlayers = shuffled.slice(0, matchCount);
-        const excluded = shuffled.slice(matchCount);
+        const selectedPlayers = shuffled.slice(0, requiredPlayers);
+        const excluded = shuffled.slice(requiredPlayers);
 
-        const half = Math.ceil(selectedPlayers.length / 2);
-        const blueTeam = selectedPlayers.slice(0, half);
-        const redTeam = selectedPlayers.slice(half);
+        const blueTeam = selectedPlayers.slice(0, teamSize);
+        const redTeam = selectedPlayers.slice(teamSize, requiredPlayers);
 
         document.getElementById('blueTeam').innerHTML = blueTeam.map(name => `<li>${name}</li>`).join('');
         document.getElementById('redTeam').innerHTML = redTeam.map(name => `<li>${name}</li>`).join('');
@@ -392,18 +373,18 @@
         }
     }
 
-    function decideBoth() {
+    function decideBoth(size) {
         hideError();
         if (getActiveMaps().length === 0) { showError("⚠️ マップが1つも選択されていません！"); return; }
-        if (!generateTeam()) return;
+        if (!generateTeam(size)) return;
         generateMap();
         document.getElementById('teamResultArea').classList.remove('hidden');
         document.getElementById('mapResultArea').classList.remove('hidden');
         updateDisplay();
     }
 
-    function decideTeamOnly() {
-        if (!generateTeam()) return;
+    function decideTeamOnly(size) {
+        if (!generateTeam(size)) return;
         document.getElementById('teamResultArea').classList.remove('hidden');
         updateDisplay();
     }
@@ -415,7 +396,7 @@
     }
 
     function createResultText() {
-        let text = "【カスタムマッチ結果】\n";
+        let text = "【チーム分け】\n";
         const teamArea = document.getElementById('teamResultArea');
         const mapArea = document.getElementById('mapResultArea');
 
@@ -423,8 +404,8 @@
             const bluePlayers = Array.from(document.getElementById('blueTeam').children).map(li => li.innerText).join('、');
             const redPlayers = Array.from(document.getElementById('redTeam').children).map(li => li.innerText).join('、');
             const excluded = document.getElementById('excludedPlayers').innerText;
-            text += `🟦 青チーム: ${bluePlayers}\n`;
-            text += `🟥 赤チーム: ${redPlayers}\n`;
+            text += `🟦 青: ${bluePlayers}\n`;
+            text += `🟥 赤: ${redPlayers}\n`;
             if (excluded !== "") text += `${excluded}\n`;
         }
 
