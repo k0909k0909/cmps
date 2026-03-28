@@ -33,7 +33,11 @@
 
         .action-buttons { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
         .sub-buttons-container { display: flex; gap: 10px; }
-        .btn-main { background-color: #ff4500; color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.2s; width: 100%;}
+        
+        .btn-main, .btn-gray { color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.2s; width: 100%; box-sizing: border-box;}
+        .btn-main { background-color: #ff4500; }
+        .btn-gray { background-color: #a0a0a0; margin-top: 5px; }
+
         .btn-sub { flex: 1; background-color: #008CBA; color: white; border: none; padding: 12px; font-size: 15px; border-radius: 5px; cursor: pointer; transition: 0.2s;}
         
         .btn-copy { background-color: #333; color: white; border: none; padding: 12px; font-size: 15px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 20px; font-weight: bold; transition: 0.3s;}
@@ -41,6 +45,7 @@
 
         @media (hover: hover) and (pointer: fine) {
             .btn-main:hover { background-color: #e03e00; }
+            .btn-gray:hover { background-color: #888; }
             .btn-sub:hover { background-color: #007399; }
             .btn-small:hover { background-color: #555; }
             .btn-copy:hover { background-color: #111; }
@@ -84,7 +89,7 @@
     <button type="button" class="add-btn" onclick="addPlayerInput()">＋ 枠を増やす</button>
 
     <details class="settings-area">
-        <summary>🗺️ 抽選するマップを選ぶ（タップで開閉）</summary>
+        <summary>🗺️ 抽選するマップを選ぶ</summary>
         <div class="map-controls">
             <button type="button" class="btn-small" onclick="toggleAllMaps(true)">すべてON</button>
             <button type="button" class="btn-small" onclick="toggleAllMaps(false)">すべてOFF</button>
@@ -105,9 +110,7 @@
             <button type="button" class="btn-sub" onclick="decideTeamOnly(3)">チーム分けのみ行う</button>
             <button type="button" class="btn-sub" onclick="decideMapOnly()">マップ抽選のみ行う</button>
         </div>
-        <div style="text-align: right; margin-top: 5px;">
-            <button type="button" class="btn-small" style="background-color: #f39c12; padding: 6px 12px;" onclick="decideBoth(2)">🎁 2vs2で抽選 (おまけ)</button>
-        </div>
+        <button type="button" class="btn-gray" onclick="decideBoth(2)">2vs2で抽選</button>
     </div>
 
     <div id="resultArea" class="result hidden">
@@ -286,185 +289,4 @@
         container.appendChild(div);
     }
 
-    function getActiveMaps() {
-        let active = [];
-        document.querySelectorAll('.normal-map-checkbox:checked').forEach(cb => {
-            active.push(cb.value);
-        });
-        document.querySelectorAll('.custom-map-checkbox:checked').forEach(cb => {
-            const inputVal = cb.nextElementSibling.value.trim();
-            if(inputVal !== '') active.push(inputVal);
-        });
-        return active;
-    }
-
-    function toggleAllMaps(state) {
-        document.querySelectorAll('.map-checkbox').forEach(cb => cb.checked = state);
-    }
-
-    function shuffleArray(array) {
-        const arr = [...array];
-        for (let i = arr.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [arr[i], arr[j]] = [arr[j], arr[i]];
-        }
-        return arr;
-    }
-
-    function showError(message) {
-        const errEl = document.getElementById('errorMessage');
-        errEl.innerText = message;
-        errEl.style.display = 'block';
-    }
-    
-    function hideError() {
-        document.getElementById('errorMessage').style.display = 'none';
-    }
-
-    function generateTeam(teamSize) {
-        hideError();
-        const players = getValidPlayers();
-        const requiredPlayers = teamSize * 2;
-        
-        if (players.length < requiredPlayers) {
-            showError(`⚠️ プレイヤー名は最低${requiredPlayers}人分入力してください！(現在: ${players.length}人)`);
-            return false;
-        }
-
-        const shuffled = shuffleArray(players);
-        const selectedPlayers = shuffled.slice(0, requiredPlayers);
-        const excluded = shuffled.slice(requiredPlayers);
-
-        const blueTeam = selectedPlayers.slice(0, teamSize);
-        const redTeam = selectedPlayers.slice(teamSize, requiredPlayers);
-
-        document.getElementById('blueTeam').innerHTML = blueTeam.map(name => `<li>${name}</li>`).join('');
-        document.getElementById('redTeam').innerHTML = redTeam.map(name => `<li>${name}</li>`).join('');
-        
-        const excludedEl = document.getElementById('excludedPlayers');
-        excludedEl.innerText = excluded.length > 0 ? "👀 観戦/お休み: " + excluded.join(" , ") : "";
-        return true;
-    }
-
-    function generateMap() {
-        hideError();
-        const activeMaps = getActiveMaps();
-        if (activeMaps.length === 0) {
-            showError("⚠️ マップが1つも選択されていません（自由枠の場合は文字を入力してください）");
-            return false;
-        }
-        const randomMap = activeMaps[Math.floor(Math.random() * activeMaps.length)];
-        document.getElementById('selectedMap').innerText = randomMap;
-        return true;
-    }
-
-    function updateDisplay() {
-        document.getElementById('resultArea').classList.remove('hidden');
-        document.getElementById('sendDiscordBtn').classList.remove('hidden'); 
-        document.getElementById('copyBtn').classList.remove('hidden'); 
-        
-        const teamArea = document.getElementById('teamResultArea');
-        const mapArea = document.getElementById('mapResultArea');
-        
-        if (!teamArea.classList.contains('hidden') && !mapArea.classList.contains('hidden')) {
-            mapArea.style.borderTop = "2px dashed #ccc";
-        } else {
-            mapArea.style.borderTop = "none";
-        }
-    }
-
-    function decideBoth(size) {
-        hideError();
-        if (getActiveMaps().length === 0) { showError("⚠️ マップが1つも選択されていません！"); return; }
-        if (!generateTeam(size)) return;
-        generateMap();
-        document.getElementById('teamResultArea').classList.remove('hidden');
-        document.getElementById('mapResultArea').classList.remove('hidden');
-        updateDisplay();
-    }
-
-    function decideTeamOnly(size) {
-        if (!generateTeam(size)) return;
-        document.getElementById('teamResultArea').classList.remove('hidden');
-        updateDisplay();
-    }
-
-    function decideMapOnly() {
-        if (!generateMap()) return;
-        document.getElementById('mapResultArea').classList.remove('hidden');
-        updateDisplay();
-    }
-
-    function createResultText() {
-        let text = "【チーム分け】\n";
-        const teamArea = document.getElementById('teamResultArea');
-        const mapArea = document.getElementById('mapResultArea');
-
-        if (!teamArea.classList.contains('hidden')) {
-            const bluePlayers = Array.from(document.getElementById('blueTeam').children).map(li => li.innerText).join('、');
-            const redPlayers = Array.from(document.getElementById('redTeam').children).map(li => li.innerText).join('、');
-            const excluded = document.getElementById('excludedPlayers').innerText;
-            text += `🟦 青: ${bluePlayers}\n`;
-            text += `🟥 赤: ${redPlayers}\n`;
-            if (excluded !== "") text += `${excluded}\n`;
-        }
-
-        if (!mapArea.classList.contains('hidden')) {
-            const mapName = document.getElementById('selectedMap').innerText;
-            text += `🗺️ マップ: ${mapName}\n`;
-        }
-        return text;
-    }
-
-    function sendToDiscord() {
-        const webhookUrl = localStorage.getItem('compassWebhookUrl');
-        if(!webhookUrl || webhookUrl === "") {
-            alert("⚠️ 上の「⚙️ Discord自動送信の設定」からWebhook URLを保存してください！");
-            return;
-        }
-
-        const textToSend = createResultText();
-        const btn = document.getElementById('sendDiscordBtn');
-        const originalText = btn.innerText;
-        btn.innerText = "送信中...";
-
-        fetch(webhookUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content: textToSend })
-        })
-        .then(response => {
-            if(response.ok) {
-                btn.innerText = "✅ 送信成功！Discordを確認してください";
-                btn.style.backgroundColor = "#4CAF50";
-            } else {
-                alert("送信に失敗しました。Webhook URLが間違っていないか確認してください。");
-                btn.innerText = originalText;
-            }
-            setTimeout(() => {
-                btn.innerText = originalText;
-                btn.style.backgroundColor = "";
-            }, 3000);
-        })
-        .catch(err => {
-            alert("通信エラーが発生しました。");
-            btn.innerText = originalText;
-        });
-    }
-
-    function copyToClipboard() {
-        const textToCopy = createResultText();
-        navigator.clipboard.writeText(textToCopy).then(() => {
-            const btn = document.getElementById('copyBtn');
-            const originalText = btn.innerText;
-            btn.innerText = "✅ コピーしました！";
-            btn.style.backgroundColor = "#4CAF50";
-            setTimeout(() => { btn.innerText = originalText; btn.style.backgroundColor = ""; }, 2000);
-        }).catch(err => {
-            alert("コピーに失敗しました。");
-        });
-    }
-</script>
-
-</body>
-</html>
+    function getActiveMaps
