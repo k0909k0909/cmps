@@ -9,18 +9,16 @@
         .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
         h1 { font-size: 24px; color: #333; }
         
-        button {
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-        }
+        button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 
         .player-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; text-align: left; }
         .input-group { display: flex; align-items: center; }
-        .input-group input { flex-grow: 1; padding: 8px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px; width: 100%; }
+        .input-group input { flex-grow: 1; padding: 8px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px; width: 100%; box-sizing: border-box;}
         .remove-btn { margin-left: 5px; background-color: #ff6b6b; color: white; border: none; padding: 8px; border-radius: 5px; cursor: pointer; font-size: 12px; white-space: nowrap; }
         .add-btn { background-color: #4CAF50; color: white; border: none; padding: 10px 20px; font-size: 14px; border-radius: 5px; cursor: pointer; margin-bottom: 20px; font-weight: bold; }
         
-        details.map-selection { margin-bottom: 20px; text-align: left; background: #f9f9f9; padding: 15px; border-radius: 5px; border: 1px solid #ddd; }
+        /* 設定エリアのデザイン */
+        details.settings-area { margin-bottom: 20px; text-align: left; background: #f9f9f9; padding: 15px; border-radius: 5px; border: 1px solid #ddd; }
         summary { font-weight: bold; cursor: pointer; outline: none; font-size: 16px; color: #333; padding: 5px 0; }
         .map-controls { margin-top: 10px; margin-bottom: 10px; }
         .btn-small { background-color: #777; color: white; border: none; padding: 8px 15px; font-size: 14px; border-radius: 3px; cursor: pointer; margin-right: 5px; }
@@ -35,10 +33,16 @@
         .btn-main { background-color: #ff4500; color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.2s; width: 100%;}
         .btn-sub { flex: 1; background-color: #008CBA; color: white; border: none; padding: 12px; font-size: 15px; border-radius: 5px; cursor: pointer; transition: 0.2s;}
         
+        .btn-copy { background-color: #333; color: white; border: none; padding: 12px; font-size: 15px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 20px; font-weight: bold; transition: 0.3s;}
+        /* Discord送信用ボタン（Discordのブランドカラー） */
+        .btn-discord { background-color: #5865F2; color: white; border: none; padding: 12px; font-size: 15px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 10px; font-weight: bold; transition: 0.3s;}
+
         @media (hover: hover) and (pointer: fine) {
             .btn-main:hover { background-color: #e03e00; }
             .btn-sub:hover { background-color: #007399; }
             .btn-small:hover { background-color: #555; }
+            .btn-copy:hover { background-color: #111; }
+            .btn-discord:hover { background-color: #4752C4; }
         }
         
         .result { margin-top: 20px; text-align: left; padding: 15px; background: #f9f9f9; border-radius: 5px; }
@@ -53,6 +57,16 @@
 <div class="container">
     <h1>🧭 コンパスカスタム用</h1>
     
+    <details class="settings-area" style="background-color: #eef2ff; border-color: #c7d2fe;">
+        <summary>⚙️ Discord自動送信の設定</summary>
+        <div style="margin-top: 10px; font-size: 13px; color: #555;">
+            <p>Discordで発行した「Webhook URL」を貼り付けて保存してください。<br>（※URLはお使いのスマホ/PCにのみ保存され、安全です）</p>
+            <input type="password" id="webhookUrl" placeholder="https://discord.com/api/webhooks/..." style="width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px;">
+            <button type="button" class="btn-small" style="background-color: #5865F2;" onclick="saveWebhook()">URLを保存する</button>
+            <span id="webhookStatus" style="color: #2e8b57; font-weight: bold; margin-left: 10px; display: none;">✅ 保存しました！</span>
+        </div>
+    </details>
+
     <p style="font-size: 14px; color: #555;">参加プレイヤー名を入力（6人以上でランダム選出）</p>
     
     <div id="playerList" class="player-inputs">
@@ -65,7 +79,7 @@
     </div>
     <button type="button" class="add-btn" onclick="addPlayerInput()">＋ 枠を増やす</button>
 
-    <details class="map-selection">
+    <details class="settings-area">
         <summary>🗺️ 抽選するマップを選ぶ（タップで開閉）</summary>
         <div class="map-controls">
             <button type="button" class="btn-small" onclick="toggleAllMaps(true)">すべてON</button>
@@ -96,6 +110,9 @@
         <div id="mapResultArea" class="map-result hidden">
             🗺️ マップ:<br><span id="selectedMap" style="display:inline-block; margin-top:5px;"></span>
         </div>
+        
+        <button type="button" id="sendDiscordBtn" class="btn-discord hidden" onclick="sendToDiscord()">🚀 結果をDiscordに自動送信する</button>
+        <button type="button" id="copyBtn" class="btn-copy hidden" onclick="copyToClipboard()">📋 結果をコピーする（予備）</button>
     </div>
 </div>
 
@@ -132,12 +149,30 @@
             checkbox.className = 'map-checkbox';
             checkbox.value = map.name;
             checkbox.checked = map.defaultOn;
-            
             label.appendChild(checkbox);
             label.appendChild(document.createTextNode(map.name));
             container.appendChild(label);
         });
+
+        // ページ読み込み時に保存されたWebhook URLがあれば復元する
+        const savedUrl = localStorage.getItem('compassWebhookUrl');
+        if(savedUrl) {
+            document.getElementById('webhookUrl').value = savedUrl;
+        }
     };
+
+    // Webhook URLをブラウザに保存する処理
+    function saveWebhook() {
+        const url = document.getElementById('webhookUrl').value.trim();
+        if(url === "") {
+            alert("URLが入力されていません！");
+            return;
+        }
+        localStorage.setItem('compassWebhookUrl', url);
+        const status = document.getElementById('webhookStatus');
+        status.style.display = 'inline';
+        setTimeout(() => { status.style.display = 'none'; }, 2000);
+    }
 
     let playerCount = 6;
 
@@ -146,32 +181,26 @@
         const playerList = document.getElementById('playerList');
         const div = document.createElement('div');
         div.className = 'input-group';
-        
         const input = document.createElement('input');
         input.type = 'text';
         input.className = 'playerName';
         input.placeholder = 'プレイヤー' + playerCount;
-        
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
         removeBtn.className = 'remove-btn';
         removeBtn.innerText = '削除';
         removeBtn.onclick = function() { playerList.removeChild(div); };
-        
         div.appendChild(input);
         div.appendChild(removeBtn);
         playerList.appendChild(div);
     }
 
     function getValidPlayers() {
-        return Array.from(document.querySelectorAll('.playerName'))
-            .map(input => input.value.trim())
-            .filter(name => name !== '');
+        return Array.from(document.querySelectorAll('.playerName')).map(input => input.value.trim()).filter(name => name !== '');
     }
 
     function getActiveMaps() {
-        return Array.from(document.querySelectorAll('.map-checkbox:checked'))
-            .map(cb => cb.value);
+        return Array.from(document.querySelectorAll('.map-checkbox:checked')).map(cb => cb.value);
     }
 
     function toggleAllMaps(state) {
@@ -231,6 +260,9 @@
 
     function updateDisplay() {
         document.getElementById('resultArea').classList.remove('hidden');
+        document.getElementById('sendDiscordBtn').classList.remove('hidden'); // Discordボタンを表示
+        document.getElementById('copyBtn').classList.remove('hidden'); // コピーボタンも表示
+        
         const teamArea = document.getElementById('teamResultArea');
         const mapArea = document.getElementById('mapResultArea');
         
@@ -243,13 +275,9 @@
 
     function decideBoth() {
         hideError();
-        if (getActiveMaps().length === 0) {
-            showError("⚠️ マップが1つも選択されていません！");
-            return;
-        }
+        if (getActiveMaps().length === 0) { showError("⚠️ マップが1つも選択されていません！"); return; }
         if (!generateTeam()) return;
         generateMap();
-        
         document.getElementById('teamResultArea').classList.remove('hidden');
         document.getElementById('mapResultArea').classList.remove('hidden');
         updateDisplay();
@@ -265,6 +293,81 @@
         if (!generateMap()) return;
         document.getElementById('mapResultArea').classList.remove('hidden');
         updateDisplay();
+    }
+
+    // ⭐ 送信用テキストを作成する共通関数
+    function createResultText() {
+        let text = "【カスタムマッチ結果】\n";
+        const teamArea = document.getElementById('teamResultArea');
+        const mapArea = document.getElementById('mapResultArea');
+
+        if (!teamArea.classList.contains('hidden')) {
+            const bluePlayers = Array.from(document.getElementById('blueTeam').children).map(li => li.innerText).join('、');
+            const redPlayers = Array.from(document.getElementById('redTeam').children).map(li => li.innerText).join('、');
+            const excluded = document.getElementById('excludedPlayers').innerText;
+            text += `🟦 蒼チーム: ${bluePlayers}\n`;
+            text += `🟥 紅チーム: ${redPlayers}\n`;
+            if (excluded !== "") text += `${excluded}\n`;
+        }
+
+        if (!mapArea.classList.contains('hidden')) {
+            const mapName = document.getElementById('selectedMap').innerText;
+            text += `🗺️ マップ: ${mapName}\n`;
+        }
+        return text;
+    }
+
+    // ⭐ 追加：Discordに直接送信する機能
+    function sendToDiscord() {
+        const webhookUrl = localStorage.getItem('compassWebhookUrl');
+        if(!webhookUrl || webhookUrl === "") {
+            alert("⚠️ 上の「⚙️ Discord自動送信の設定」からWebhook URLを保存してください！");
+            return;
+        }
+
+        const textToSend = createResultText();
+        const btn = document.getElementById('sendDiscordBtn');
+        const originalText = btn.innerText;
+        btn.innerText = "送信中...";
+
+        // Discordにデータを送る
+        fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content: textToSend })
+        })
+        .then(response => {
+            if(response.ok) {
+                btn.innerText = "✅ 送信成功！Discordを確認してください";
+                btn.style.backgroundColor = "#4CAF50";
+            } else {
+                alert("送信に失敗しました。Webhook URLが間違っていないか確認してください。");
+                btn.innerText = originalText;
+            }
+            // 3秒後に元のボタンに戻す
+            setTimeout(() => {
+                btn.innerText = originalText;
+                btn.style.backgroundColor = "";
+            }, 3000);
+        })
+        .catch(err => {
+            alert("通信エラーが発生しました。");
+            btn.innerText = originalText;
+        });
+    }
+
+    // クリップボードにコピーする機能（予備）
+    function copyToClipboard() {
+        const textToCopy = createResultText();
+        navigator.clipboard.writeText(textToCopy).then(() => {
+            const btn = document.getElementById('copyBtn');
+            const originalText = btn.innerText;
+            btn.innerText = "✅ コピーしました！";
+            btn.style.backgroundColor = "#4CAF50";
+            setTimeout(() => { btn.innerText = originalText; btn.style.backgroundColor = ""; }, 2000);
+        }).catch(err => {
+            alert("コピーに失敗しました。");
+        });
     }
 </script>
 
