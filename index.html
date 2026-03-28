@@ -21,9 +21,14 @@
         summary { font-weight: bold; cursor: pointer; outline: none; font-size: 16px; color: #333; padding: 5px 0; }
         .map-controls { margin-top: 10px; margin-bottom: 10px; }
         .btn-small { background-color: #777; color: white; border: none; padding: 8px 15px; font-size: 14px; border-radius: 3px; cursor: pointer; margin-right: 5px; }
+        
         .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 14px; margin-top: 10px; }
         .checkbox-grid label { display: flex; align-items: center; cursor: pointer; line-height: 1.3; padding: 5px 0;}
         .checkbox-grid input { margin-right: 8px; flex-shrink: 0; width: 18px; height: 18px; cursor: pointer;}
+
+        /* 自由枠エリアのデザイン */
+        .custom-map-area { margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ccc; }
+        .custom-map-row { display: flex; align-items: center; margin-bottom: 8px; }
 
         #errorMessage { color: red; font-weight: bold; font-size: 14px; margin-bottom: 10px; display: none; }
 
@@ -32,31 +37,20 @@
         .btn-main { background-color: #ff4500; color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.2s; width: 100%;}
         .btn-sub { flex: 1; background-color: #008CBA; color: white; border: none; padding: 12px; font-size: 15px; border-radius: 5px; cursor: pointer; transition: 0.2s;}
         
-        .btn-mini { background-color: #6c757d; color: white; border: none; padding: 10px; font-size: 13px; border-radius: 5px; cursor: pointer; transition: 0.2s; width: 100%; margin-top: -5px;}
-
         .btn-copy { background-color: #333; color: white; border: none; padding: 12px; font-size: 15px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 20px; font-weight: bold; transition: 0.3s;}
         .btn-discord { background-color: #5865F2; color: white; border: none; padding: 12px; font-size: 15px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 10px; font-weight: bold; transition: 0.3s;}
 
         @media (hover: hover) and (pointer: fine) {
             .btn-main:hover { background-color: #e03e00; }
             .btn-sub:hover { background-color: #007399; }
-            .btn-mini:hover { background-color: #5a6268; }
             .btn-small:hover { background-color: #555; }
             .btn-copy:hover { background-color: #111; }
             .btn-discord:hover { background-color: #4752C4; }
         }
         
         .result { margin-top: 20px; text-align: left; padding: 15px; background: #f9f9f9; border-radius: 5px; }
-        
-        .teams-container { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 15px; }
-        .team-box { flex: 1; background: #fff; padding: 10px; border-radius: 5px; border: 1px solid #ddd; }
-        .team-box h3 { margin-top: 0; margin-bottom: 10px; text-align: center; border-bottom: 2px solid; padding-bottom: 5px; font-size: 16px; }
-        .team-blue h3 { color: #0066cc; border-bottom-color: #0066cc; }
-        .team-red h3 { color: #cc0000; border-bottom-color: #cc0000; }
-        .team-box ul { list-style-type: none; padding: 0; margin: 0; text-align: center; }
-        .team-box li { padding: 5px 0; border-bottom: 1px dashed #eee; font-weight: bold; }
-        .team-box li:last-child { border-bottom: none; }
-
+        .team-blue { color: #0066cc; font-weight: bold; margin-top: 0; }
+        .team-red { color: #cc0000; font-weight: bold; }
         .map-result { font-size: 20px; font-weight: bold; color: #2e8b57; padding-top: 15px; text-align: center; }
         .hidden { display: none !important; }
     </style>
@@ -67,67 +61,60 @@
     <h1>🧭 コンパスカスタム用</h1>
     
     <details class="settings-area" style="background-color: #eef2ff; border-color: #c7d2fe;">
-        <summary>Discord自動送信の設定</summary>
+        <summary>⚙️ Discord自動送信の設定</summary>
         <div style="margin-top: 10px; font-size: 13px; color: #555;">
+            <p>Discordの「Webhook URL」を貼り付けてください。<br>（ブラウザにのみ安全に記憶されます）</p>
             <input type="password" id="webhookUrl" placeholder="https://discord.com/api/webhooks/..." style="width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px;">
-            <button type="button" class="btn-small" style="background-color: #5865F2;" onclick="saveWebhook()">URLを保存する</button>
-            <span id="webhookStatus" style="color: #2e8b57; font-weight: bold; margin-left: 10px; display: none;">保存しました！</span>
+            <button type="button" class="btn-small" style="background-color: #5865F2;" onclick="saveWebhook()">URLを保存</button>
+            <button type="button" class="btn-small" style="background-color: #ff6b6b;" onclick="resetWebhook()">リセット</button>
+            <span id="webhookStatus" style="color: #2e8b57; font-weight: bold; margin-left: 5px; display: none;">✅ 保存しました</span>
         </div>
     </details>
 
-    <p style="font-size: 14px; color: #555;">参加プレイヤー名を入力</p>
+    <p style="font-size: 14px; color: #555;">参加プレイヤー名を入力（最低4枠・6人以上でランダム選出）</p>
     
-    <div id="playerList" class="player-inputs">
-        <div class="input-group"><input type="text" class="playerName" placeholder="プレイヤー1" value="プレイヤー1"></div>
-        <div class="input-group"><input type="text" class="playerName" placeholder="プレイヤー2" value="プレイヤー2"></div>
-        <div class="input-group"><input type="text" class="playerName" placeholder="プレイヤー3" value="プレイヤー3"></div>
-        <div class="input-group"><input type="text" class="playerName" placeholder="プレイヤー4" value="プレイヤー4"></div>
-        <div class="input-group"><input type="text" class="playerName" placeholder="プレイヤー5" value="プレイヤー5"></div>
-        <div class="input-group"><input type="text" class="playerName" placeholder="プレイヤー6" value="プレイヤー6"></div>
-    </div>
+    <div id="playerList" class="player-inputs"></div>
     <button type="button" class="add-btn" onclick="addPlayerInput()">＋ 枠を増やす</button>
 
     <details class="settings-area">
-        <summary>抽選するマップを選ぶ（タップで開閉）</summary>
+        <summary>🗺️ 抽選するマップを選ぶ（タップで開閉）</summary>
         <div class="map-controls">
             <button type="button" class="btn-small" onclick="toggleAllMaps(true)">すべてON</button>
             <button type="button" class="btn-small" onclick="toggleAllMaps(false)">すべてOFF</button>
         </div>
         <div id="mapCheckboxes" class="checkbox-grid"></div>
+        
+        <div class="custom-map-area">
+            <div id="customMapList"></div>
+            <button type="button" class="btn-small" style="background-color: #4CAF50;" onclick="addCustomMap()">＋ 自由枠を追加</button>
+        </div>
     </details>
 
     <div id="errorMessage"></div>
 
     <div class="action-buttons">
-        <button type="button" class="btn-main" onclick="decideBoth()">チーム分け＆マップ抽選</button>
+        <button type="button" class="btn-main" onclick="decideBoth()">チーム分け ＆ マップ抽選を同時に行う</button>
         <div class="sub-buttons-container">
-            <button type="button" class="btn-sub" onclick="decideTeamOnly()">チーム分けのみ</button>
-            <button type="button" class="btn-sub" onclick="decideMapOnly()">マップ抽選のみ</button>
+            <button type="button" class="btn-sub" onclick="decideTeamOnly()">チーム分けのみ行う</button>
+            <button type="button" class="btn-sub" onclick="decideMapOnly()">マップ抽選のみ行う</button>
         </div>
-        <button type="button" class="btn-mini" onclick="decide2v2()">2on2 チーム分けを行う（マップなし）</button>
     </div>
 
     <div id="resultArea" class="result hidden">
         <div id="teamResultArea" class="hidden">
-            <div class="teams-container">
-                <div class="team-box team-blue">
-                    <h3>青チーム</h3>
-                    <ul id="blueTeam"></ul>
-                </div>
-                <div class="team-box team-red">
-                    <h3>赤チーム</h3>
-                    <ul id="redTeam"></ul>
-                </div>
-            </div>
-            <p id="excludedPlayers" style="font-size: 14px; color: #666; font-weight: bold; text-align: center;"></p>
+            <h3 class="team-blue">🟦 蒼チーム</h3>
+            <ul id="blueTeam"></ul>
+            <h3 class="team-red">🟥 紅チーム</h3>
+            <ul id="redTeam"></ul>
+            <p id="excludedPlayers" style="font-size: 14px; color: #666; font-weight: bold;"></p>
         </div>
 
         <div id="mapResultArea" class="map-result hidden">
-            マップ:<br><span id="selectedMap" style="display:inline-block; margin-top:5px;"></span>
+            🗺️ マップ:<br><span id="selectedMap" style="display:inline-block; margin-top:5px;"></span>
         </div>
         
-        <button type="button" id="sendDiscordBtn" class="btn-discord hidden" onclick="sendToDiscord()">結果をDiscordに自動送信する</button>
-        <button type="button" id="copyBtn" class="btn-copy hidden" onclick="copyToClipboard()">結果をコピーする</button>
+        <button type="button" id="sendDiscordBtn" class="btn-discord hidden" onclick="sendToDiscord()">🚀 結果をDiscordに自動送信する</button>
+        <button type="button" id="copyBtn" class="btn-copy hidden" onclick="copyToClipboard()">📋 結果をコピーする（予備）</button>
     </div>
 </div>
 
@@ -156,12 +143,13 @@
     ];
 
     window.onload = function() {
+        // 固定マップの生成
         const container = document.getElementById('mapCheckboxes');
         mapData.forEach(map => {
             const label = document.createElement('label');
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
-            checkbox.className = 'map-checkbox';
+            checkbox.className = 'map-checkbox normal-map-checkbox';
             checkbox.value = map.name;
             checkbox.checked = map.defaultOn;
             label.appendChild(checkbox);
@@ -169,12 +157,19 @@
             container.appendChild(label);
         });
 
+        // プレイヤー初期枠を6つ生成
+        for(let i = 0; i < 6; i++) {
+            addPlayerInput();
+        }
+
+        // URLの復元
         const savedUrl = localStorage.getItem('compassWebhookUrl');
         if(savedUrl) {
             document.getElementById('webhookUrl').value = savedUrl;
         }
     };
 
+    // --- Webhook設定関連 ---
     function saveWebhook() {
         const url = document.getElementById('webhookUrl').value.trim();
         if(url === "") {
@@ -183,38 +178,119 @@
         }
         localStorage.setItem('compassWebhookUrl', url);
         const status = document.getElementById('webhookStatus');
+        status.innerText = "✅ 保存しました";
+        status.style.color = "#2e8b57";
         status.style.display = 'inline';
         setTimeout(() => { status.style.display = 'none'; }, 2000);
     }
 
-    let playerCount = 6;
-    let lastExcludedPlayers = [];
+    function resetWebhook() {
+        localStorage.removeItem('compassWebhookUrl');
+        document.getElementById('webhookUrl').value = '';
+        const status = document.getElementById('webhookStatus');
+        status.innerText = "🗑️ リセット完了";
+        status.style.color = "#cc0000";
+        status.style.display = 'inline';
+        setTimeout(() => { status.style.display = 'none'; }, 2000);
+    }
 
+    // --- プレイヤー入力関連 ---
     function addPlayerInput() {
-        playerCount++;
         const playerList = document.getElementById('playerList');
         const div = document.createElement('div');
         div.className = 'input-group';
+        
         const input = document.createElement('input');
         input.type = 'text';
         input.className = 'playerName';
-        input.placeholder = 'プレイヤー' + playerCount;
+        // 初期状態は空欄（value=""）にしておく
+        input.value = ""; 
+        
         const removeBtn = document.createElement('button');
         removeBtn.type = 'button';
         removeBtn.className = 'remove-btn';
         removeBtn.innerText = '削除';
-        removeBtn.onclick = function() { playerList.removeChild(div); };
+        removeBtn.onclick = function() { 
+            // 4枠未満には減らせないようにする
+            if (document.querySelectorAll('.input-group').length <= 4) {
+                showError("⚠️ プレイヤー枠は最低4枠必要です！");
+                setTimeout(hideError, 2000);
+                return;
+            }
+            playerList.removeChild(div);
+            updatePlayerPlaceholders();
+        };
+        
         div.appendChild(input);
         div.appendChild(removeBtn);
         playerList.appendChild(div);
+        updatePlayerPlaceholders();
+    }
+
+    // 番号（1、2、3...）を裏に薄く表示する処理
+    function updatePlayerPlaceholders() {
+        const inputs = document.querySelectorAll('.playerName');
+        inputs.forEach((input, index) => {
+            input.placeholder = (index + 1).toString();
+        });
     }
 
     function getValidPlayers() {
         return Array.from(document.querySelectorAll('.playerName')).map(input => input.value.trim()).filter(name => name !== '');
     }
 
+    // --- マップ自由枠関連 ---
+    function addCustomMap() {
+        const container = document.getElementById('customMapList');
+        const div = document.createElement('div');
+        div.className = 'custom-map-row';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'map-checkbox custom-map-checkbox';
+        checkbox.checked = true;
+        checkbox.style.width = '18px';
+        checkbox.style.height = '18px';
+        checkbox.style.marginRight = '8px';
+        
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'custom-map-input';
+        input.placeholder = 'マップ名を入力';
+        input.style.flexGrow = '1';
+        input.style.padding = '6px';
+        input.style.border = '1px solid #ccc';
+        input.style.borderRadius = '3px';
+
+        const removeBtn = document.createElement('button');
+        removeBtn.type = 'button';
+        removeBtn.innerText = '✕';
+        removeBtn.style.marginLeft = '8px';
+        removeBtn.style.padding = '6px 12px';
+        removeBtn.style.border = 'none';
+        removeBtn.style.backgroundColor = '#ccc';
+        removeBtn.style.borderRadius = '3px';
+        removeBtn.style.cursor = 'pointer';
+        removeBtn.onclick = function() { container.removeChild(div); };
+
+        div.appendChild(checkbox);
+        div.appendChild(input);
+        div.appendChild(removeBtn);
+        container.appendChild(div);
+    }
+
     function getActiveMaps() {
-        return Array.from(document.querySelectorAll('.map-checkbox:checked')).map(cb => cb.value);
+        let active = [];
+        // 固定マップ
+        document.querySelectorAll('.normal-map-checkbox:checked').forEach(cb => {
+            active.push(cb.value);
+        });
+        // 自由枠マップ
+        document.querySelectorAll('.custom-map-checkbox:checked').forEach(cb => {
+            const inputVal = cb.nextElementSibling.value.trim();
+            if(inputVal !== '') active.push(inputVal);
+        });
+        return active;
     }
 
     function toggleAllMaps(state) {
@@ -240,36 +316,31 @@
         document.getElementById('errorMessage').style.display = 'none';
     }
 
-    function generateTeam(teamSize) {
+    function generateTeam() {
         hideError();
         const players = getValidPlayers();
-        const requiredPlayers = teamSize * 2;
-
-        if (players.length < requiredPlayers) {
-            showError(`※ プレイヤー名は最低${requiredPlayers}人分入力してください！(現在: ${players.length}人)`);
+        
+        // 最低4人いれば抽選可能に変更
+        if (players.length < 4) {
+            showError("⚠️ プレイヤー名は最低4人分入力してください！(現在: " + players.length + "人)");
             return false;
         }
 
-        let priorityPlayers = players.filter(p => lastExcludedPlayers.includes(p));
-        let normalPlayers = players.filter(p => !lastExcludedPlayers.includes(p));
+        const shuffled = shuffleArray(players);
+        const matchCount = Math.min(players.length, 6);
+        const selectedPlayers = shuffled.slice(0, matchCount);
+        const excluded = shuffled.slice(matchCount);
 
-        priorityPlayers = shuffleArray(priorityPlayers);
-        normalPlayers = shuffleArray(normalPlayers);
+        // 人数に合わせて柔軟に分割（4人なら2:2、5人なら3:2、6人なら3:3）
+        const half = Math.ceil(selectedPlayers.length / 2);
+        const blueTeam = selectedPlayers.slice(0, half);
+        const redTeam = selectedPlayers.slice(half);
 
-        let combined = priorityPlayers.concat(normalPlayers);
-
-        let selectedPlayers = combined.slice(0, requiredPlayers);
-        let excluded = combined.slice(requiredPlayers);
-
-        selectedPlayers = shuffleArray(selectedPlayers);
-
-        lastExcludedPlayers = excluded;
-
-        document.getElementById('blueTeam').innerHTML = selectedPlayers.slice(0, teamSize).map(name => `<li>${name}</li>`).join('');
-        document.getElementById('redTeam').innerHTML = selectedPlayers.slice(teamSize, requiredPlayers).map(name => `<li>${name}</li>`).join('');
+        document.getElementById('blueTeam').innerHTML = blueTeam.map(name => `<li>${name}</li>`).join('');
+        document.getElementById('redTeam').innerHTML = redTeam.map(name => `<li>${name}</li>`).join('');
         
         const excludedEl = document.getElementById('excludedPlayers');
-        excludedEl.innerText = excluded.length > 0 ? "観戦プレイヤー: " + excluded.join(" , ") : "";
+        excludedEl.innerText = excluded.length > 0 ? "👀 観戦/お休み: " + excluded.join(" , ") : "";
         return true;
     }
 
@@ -277,7 +348,7 @@
         hideError();
         const activeMaps = getActiveMaps();
         if (activeMaps.length === 0) {
-            showError("※ マップが1つも選択されていません！「抽選するマップを選ぶ」からチェックを入れてください。");
+            showError("⚠️ マップが1つも選択されていません（自由枠の場合は文字を入力してください）");
             return false;
         }
         const randomMap = activeMaps[Math.floor(Math.random() * activeMaps.length)];
@@ -287,8 +358,8 @@
 
     function updateDisplay() {
         document.getElementById('resultArea').classList.remove('hidden');
-        document.getElementById('sendDiscordBtn').classList.remove('hidden');
-        document.getElementById('copyBtn').classList.remove('hidden');
+        document.getElementById('sendDiscordBtn').classList.remove('hidden'); 
+        document.getElementById('copyBtn').classList.remove('hidden'); 
         
         const teamArea = document.getElementById('teamResultArea');
         const mapArea = document.getElementById('mapResultArea');
@@ -301,8 +372,9 @@
     }
 
     function decideBoth() {
-        if (!generateTeam(3)) return;
-        if (getActiveMaps().length === 0) { showError("※ マップが1つも選択されていません！"); return; }
+        hideError();
+        if (getActiveMaps().length === 0) { showError("⚠️ マップが1つも選択されていません！"); return; }
+        if (!generateTeam()) return;
         generateMap();
         document.getElementById('teamResultArea').classList.remove('hidden');
         document.getElementById('mapResultArea').classList.remove('hidden');
@@ -310,20 +382,12 @@
     }
 
     function decideTeamOnly() {
-        if (!generateTeam(3)) return;
+        if (!generateTeam()) return;
         document.getElementById('teamResultArea').classList.remove('hidden');
-        updateDisplay();
-    }
-
-    function decide2v2() {
-        if (!generateTeam(2)) return;
-        document.getElementById('teamResultArea').classList.remove('hidden');
-        document.getElementById('mapResultArea').classList.add('hidden');
         updateDisplay();
     }
 
     function decideMapOnly() {
-        hideError();
         if (!generateMap()) return;
         document.getElementById('mapResultArea').classList.remove('hidden');
         updateDisplay();
@@ -338,14 +402,14 @@
             const bluePlayers = Array.from(document.getElementById('blueTeam').children).map(li => li.innerText).join('、');
             const redPlayers = Array.from(document.getElementById('redTeam').children).map(li => li.innerText).join('、');
             const excluded = document.getElementById('excludedPlayers').innerText;
-            text += `青チーム: ${bluePlayers}\n`;
-            text += `赤チーム: ${redPlayers}\n`;
+            text += `🟦 蒼チーム: ${bluePlayers}\n`;
+            text += `🟥 紅チーム: ${redPlayers}\n`;
             if (excluded !== "") text += `${excluded}\n`;
         }
 
         if (!mapArea.classList.contains('hidden')) {
             const mapName = document.getElementById('selectedMap').innerText;
-            text += `マップ: ${mapName}\n`;
+            text += `🗺️ マップ: ${mapName}\n`;
         }
         return text;
     }
@@ -353,7 +417,7 @@
     function sendToDiscord() {
         const webhookUrl = localStorage.getItem('compassWebhookUrl');
         if(!webhookUrl || webhookUrl === "") {
-            alert("※ 上の「Discord自動送信の設定」からWebhook URLを保存してください！");
+            alert("⚠️ 上の「⚙️ Discord自動送信の設定」からWebhook URLを保存してください！");
             return;
         }
 
@@ -369,7 +433,7 @@
         })
         .then(response => {
             if(response.ok) {
-                btn.innerText = "送信成功！";
+                btn.innerText = "✅ 送信成功！Discordを確認してください";
                 btn.style.backgroundColor = "#4CAF50";
             } else {
                 alert("送信に失敗しました。Webhook URLが間違っていないか確認してください。");
@@ -391,7 +455,7 @@
         navigator.clipboard.writeText(textToCopy).then(() => {
             const btn = document.getElementById('copyBtn');
             const originalText = btn.innerText;
-            btn.innerText = "コピーしました！";
+            btn.innerText = "✅ コピーしました！";
             btn.style.backgroundColor = "#4CAF50";
             setTimeout(() => { btn.innerText = originalText; btn.style.backgroundColor = ""; }, 2000);
         }).catch(err => {
