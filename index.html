@@ -32,7 +32,6 @@
         .btn-main { background-color: #ff4500; color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.2s; width: 100%;}
         .btn-sub { flex: 1; background-color: #008CBA; color: white; border: none; padding: 12px; font-size: 15px; border-radius: 5px; cursor: pointer; transition: 0.2s;}
         
-        /* 2on2用の小さなボタン */
         .btn-mini { background-color: #6c757d; color: white; border: none; padding: 10px; font-size: 13px; border-radius: 5px; cursor: pointer; transition: 0.2s; width: 100%; margin-top: -5px;}
 
         .btn-copy { background-color: #333; color: white; border: none; padding: 12px; font-size: 15px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 20px; font-weight: bold; transition: 0.3s;}
@@ -70,7 +69,6 @@
     <details class="settings-area" style="background-color: #eef2ff; border-color: #c7d2fe;">
         <summary>Discord自動送信の設定</summary>
         <div style="margin-top: 10px; font-size: 13px; color: #555;">
-            <p>Discordで発行した「Webhook URL」を貼り付けて保存してください。<br>（※URLはお使いのスマホ/PCにのみ保存され、安全です）</p>
             <input type="password" id="webhookUrl" placeholder="https://discord.com/api/webhooks/..." style="width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px;">
             <button type="button" class="btn-small" style="background-color: #5865F2;" onclick="saveWebhook()">URLを保存する</button>
             <span id="webhookStatus" style="color: #2e8b57; font-weight: bold; margin-left: 10px; display: none;">保存しました！</span>
@@ -101,9 +99,9 @@
     <div id="errorMessage"></div>
 
     <div class="action-buttons">
-        <button type="button" class="btn-main" onclick="decideBoth()">3vs3 チーム分け＆マップ抽選</button>
+        <button type="button" class="btn-main" onclick="decideBoth()">チーム分け＆マップ抽選</button>
         <div class="sub-buttons-container">
-            <button type="button" class="btn-sub" onclick="decideTeamOnly()">3vs3 チームのみ</button>
+            <button type="button" class="btn-sub" onclick="decideTeamOnly()">チーム分けのみ</button>
             <button type="button" class="btn-sub" onclick="decideMapOnly()">マップ抽選のみ</button>
         </div>
         <button type="button" class="btn-mini" onclick="decide2v2()">2on2 チーム分けを行う（マップなし）</button>
@@ -129,7 +127,7 @@
         </div>
         
         <button type="button" id="sendDiscordBtn" class="btn-discord hidden" onclick="sendToDiscord()">結果をDiscordに自動送信する</button>
-        <button type="button" id="copyBtn" class="btn-copy hidden" onclick="copyToClipboard()">結果をコピーする（予備）</button>
+        <button type="button" id="copyBtn" class="btn-copy hidden" onclick="copyToClipboard()">結果をコピーする</button>
     </div>
 </div>
 
@@ -242,11 +240,10 @@
         document.getElementById('errorMessage').style.display = 'none';
     }
 
-    // ⭐ 3vs3にも2on2にも対応できるように改良
     function generateTeam(teamSize) {
         hideError();
         const players = getValidPlayers();
-        const requiredPlayers = teamSize * 2; // 3なら6人、2なら4人必要
+        const requiredPlayers = teamSize * 2;
 
         if (players.length < requiredPlayers) {
             showError(`※ プレイヤー名は最低${requiredPlayers}人分入力してください！(現在: ${players.length}人)`);
@@ -304,7 +301,7 @@
     }
 
     function decideBoth() {
-        if (!generateTeam(3)) return; // 3vs3を指定
+        if (!generateTeam(3)) return;
         if (getActiveMaps().length === 0) { showError("※ マップが1つも選択されていません！"); return; }
         generateMap();
         document.getElementById('teamResultArea').classList.remove('hidden');
@@ -313,16 +310,15 @@
     }
 
     function decideTeamOnly() {
-        if (!generateTeam(3)) return; // 3vs3を指定
+        if (!generateTeam(3)) return;
         document.getElementById('teamResultArea').classList.remove('hidden');
         updateDisplay();
     }
 
-    // ⭐ 追加：2on2の処理（マップは表示させない）
     function decide2v2() {
-        if (!generateTeam(2)) return; // 2vs2を指定
+        if (!generateTeam(2)) return;
         document.getElementById('teamResultArea').classList.remove('hidden');
-        document.getElementById('mapResultArea').classList.add('hidden'); // マップは隠す
+        document.getElementById('mapResultArea').classList.add('hidden');
         updateDisplay();
     }
 
@@ -373,7 +369,7 @@
         })
         .then(response => {
             if(response.ok) {
-                btn.innerText = "送信成功！Discordを確認してください";
+                btn.innerText = "送信成功！";
                 btn.style.backgroundColor = "#4CAF50";
             } else {
                 alert("送信に失敗しました。Webhook URLが間違っていないか確認してください。");
