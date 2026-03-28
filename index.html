@@ -34,7 +34,6 @@
         .action-buttons { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
         .sub-buttons-container { display: flex; gap: 10px; }
         
-        /* ボタンのデザイン（2on2用の縦幅を減らしてスッキリさせています） */
         .btn-main { background-color: #ff4500; color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.2s; width: 100%; box-sizing: border-box;}
         .btn-gray { background-color: #a0a0a0; color: white; border: none; padding: 10px; font-size: 15px; font-weight: bold; border-radius: 5px; cursor: pointer; transition: 0.2s; width: 100%; box-sizing: border-box; margin-top: 5px;}
         .btn-sub { flex: 1; background-color: #008CBA; color: white; border: none; padding: 12px; font-size: 15px; border-radius: 5px; cursor: pointer; transition: 0.2s;}
@@ -138,7 +137,7 @@
             <button type="button" class="btn-sub" onclick="decideTeamOnly(3)">チーム分けのみ行う</button>
             <button type="button" class="btn-sub" onclick="decideMapOnly()">マップ抽選のみ行う</button>
         </div>
-        <button type="button" class="btn-gray" onclick="decideBoth(2)">2on2で抽選</button>
+        <button type="button" class="btn-gray" onclick="decideTeamOnly(2)">2on2で抽選</button>
     </div>
 
     <div id="resultArea" class="result hidden">
@@ -167,7 +166,6 @@
 
 <script>
     window.onload = function() {
-        // エラーによる停止を防ぐため、処理を安全に実行します
         try {
             const savedUrl = localStorage.getItem('compassWebhookUrl');
             if(savedUrl) {
@@ -208,7 +206,6 @@
         } catch (error) {}
     }
 
-    // プレイヤー枠を削除する処理
     function removePlayerInput(btn) {
         const playerList = document.getElementById('playerList');
         if (document.querySelectorAll('.input-group').length <= 4) {
@@ -220,7 +217,6 @@
         updatePlayerPlaceholders();
     }
 
-    // プレイヤー枠を追加する処理
     function addPlayerInput() {
         const playerList = document.getElementById('playerList');
         const div = document.createElement('div');
