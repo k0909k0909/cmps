@@ -12,9 +12,11 @@
         .header-wrapper h1 { margin: 0; font-size: 22px; color: #333; }
         .btn-patch-icon { position: absolute; right: 0; background: none; border: none; font-size: 24px; cursor: pointer; transition: 0.2s; padding: 5px; }
 
-        /* タブのデザイン */
+        /* タブのデザイン（比率を3:1に調整） */
         .tab-menu { display: flex; border-bottom: 2px solid #ddd; margin-bottom: 20px; }
-        .tab-btn { flex: 1; padding: 12px; cursor: pointer; border: none; background: #f8f8f8; font-weight: bold; color: #666; transition: 0.3s; }
+        .tab-btn { padding: 12px; cursor: pointer; border: none; background: #f8f8f8; font-weight: bold; color: #666; transition: 0.3s; }
+        #tabMatch { flex: 3; }
+        #tabStats { flex: 1; border-left: 1px solid #ddd; }
         .tab-btn.active { background: #fff; color: #ff4500; border-bottom: 3px solid #ff4500; margin-bottom: -2px; }
 
         button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
@@ -51,8 +53,9 @@
         
         /* 戦績記録ボタン */
         .win-record-buttons { display: flex; gap: 10px; margin-bottom: 15px; }
-        .btn-win-blue { flex: 1; background-color: #0066cc; color: white; border: none; padding: 10px; border-radius: 5px; font-weight: bold; cursor: pointer; }
-        .btn-win-red { flex: 1; background-color: #cc0000; color: white; border: none; padding: 10px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .btn-win-blue { flex: 1; background-color: #0066cc; color: white; border: none; padding: 12px; border-radius: 5px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.2s;}
+        .btn-win-red { flex: 1; background-color: #cc0000; color: white; border: none; padding: 12px; border-radius: 5px; font-weight: bold; font-size: 16px; cursor: pointer; transition: 0.2s;}
+        .btn-win-blue:active, .btn-win-red:active { transform: scale(0.95); }
 
         .btn-copy { background-color: #333; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; margin-bottom: 8px; }
         .btn-discord { background-color: #5865F2; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; }
@@ -62,6 +65,11 @@
         .stats-table th, .stats-table td { border: 1px solid #ddd; padding: 10px; text-align: center; }
         .stats-table th { background-color: #f2f2f2; }
         .stats-table tr:nth-child(even) { background-color: #fafafa; }
+
+        /* 試合履歴エリア */
+        .history-list { text-align: left; font-size: 13px; max-height: 250px; overflow-y: auto; background: #fff; padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin-top: 10px;}
+        .history-item { border-bottom: 1px dashed #ccc; padding: 8px 0; line-height: 1.5;}
+        .history-item:last-child { border-bottom: none; }
 
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 200; justify-content: center; align-items: center; }
         .modal-content { background: #fff; width: 90%; max-width: 500px; max-height: 80vh; border-radius: 10px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; text-align: left; position: relative; }
@@ -163,9 +171,9 @@
                         <ul id="redTeam"></ul>
                     </div>
                 </div>
-                <div id="recordControl" class="win-record-buttons">
-                    <button class="btn-win-blue" onclick="recordWin('blue')">🟦 青の勝利を記録</button>
-                    <button class="btn-win-red" onclick="recordWin('red')">🟥 赤の勝利を記録</button>
+                <div id="recordControl" class="win-record-buttons hidden">
+                    <button class="btn-win-blue" onclick="recordWin('blue', this)">🟦 勝ち</button>
+                    <button class="btn-win-red" onclick="recordWin('red', this)">🟥 勝ち</button>
                 </div>
                 <p id="excludedPlayers" style="font-size: 13px; color: #666; font-weight: bold;"></p>
             </div>
@@ -178,7 +186,7 @@
     </div>
 
     <div id="contentStats" class="hidden">
-        <h3>📊 プレイヤー累計戦績</h3>
+        <h3>📊 プレイヤー勝率</h3>
         <div style="overflow-x: auto;">
             <table class="stats-table">
                 <thead>
@@ -192,7 +200,11 @@
                 <tbody id="statsTableBody"></tbody>
             </table>
         </div>
-        <button class="btn-small" style="background-color: #ff6b6b; margin-top: 20px;" onclick="clearStats()">戦績をリセット</button>
+        
+        <h3 style="margin-top: 30px;">📜 試合履歴</h3>
+        <div id="matchHistoryList" class="history-list"></div>
+
+        <button class="btn-small" style="background-color: #ff6b6b; margin-top: 20px;" onclick="clearStats()">すべてのデータをリセット</button>
     </div>
 </div>
 
@@ -217,7 +229,6 @@
         renderStats();
     };
 
-    // タブ切り替え
     function switchTab(tab) {
         document.getElementById('contentMatch').classList.toggle('hidden', tab !== 'match');
         document.getElementById('contentStats').classList.toggle('hidden', tab !== 'stats');
@@ -226,12 +237,17 @@
         if(tab === 'stats') renderStats();
     }
 
-    // 戦績記録システム
+    // --- 戦績・履歴の記録システム ---
     function getStats() {
         return JSON.parse(localStorage.getItem('compassPlayerStats') || '{}');
     }
 
-    function recordWin(winner) {
+    function getHistory() {
+        return JSON.parse(localStorage.getItem('compassMatchHistory') || '[]');
+    }
+
+    function recordWin(winner, btn) {
+        // 1. プレイヤーの勝率を更新
         const stats = getStats();
         const winningTeam = winner === 'blue' ? currentMatchPlayers.blue : currentMatchPlayers.red;
         const losingTeam = winner === 'blue' ? currentMatchPlayers.red : currentMatchPlayers.blue;
@@ -244,13 +260,29 @@
             if(!stats[name]) stats[name] = { win: 0, loss: 0 };
             stats[name].loss++;
         });
-
         localStorage.setItem('compassPlayerStats', JSON.stringify(stats));
-        document.getElementById('recordControl').classList.add('hidden');
-        alert((winner === 'blue' ? '青' : '赤') + "チームの勝利を記録しました！");
+
+        // 2. 試合履歴を保存
+        const history = getHistory();
+        const now = new Date();
+        const timeString = `${now.getMonth() + 1}/${now.getDate()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        
+        history.push({
+            time: timeString,
+            blue: currentMatchPlayers.blue,
+            red: currentMatchPlayers.red,
+            winner: winner
+        });
+        localStorage.setItem('compassMatchHistory', JSON.stringify(history));
+
+        // 3. ボタンの表示を一時的に切り替えて保存完了を知らせる
+        const originalText = btn.innerText;
+        btn.innerText = "✅ 記録";
+        setTimeout(() => { btn.innerText = originalText; }, 1000);
     }
 
     function renderStats() {
+        // プレイヤー勝率表の描画
         const stats = getStats();
         const tbody = document.getElementById('statsTableBody');
         tbody.innerHTML = '';
@@ -259,25 +291,51 @@
         
         if(sortedNames.length === 0) {
             tbody.innerHTML = '<tr><td colspan="4">データがありません</td></tr>';
-            return;
+        } else {
+            sortedNames.forEach(name => {
+                const p = stats[name];
+                const total = p.win + p.loss;
+                const rate = total === 0 ? 0 : ((p.win / total) * 100).toFixed(1);
+                tbody.innerHTML += `<tr>
+                    <td>${name}</td>
+                    <td>${p.win}</td>
+                    <td>${p.loss}</td>
+                    <td>${rate}%</td>
+                </tr>`;
+            });
         }
 
-        sortedNames.forEach(name => {
-            const p = stats[name];
-            const total = p.win + p.loss;
-            const rate = total === 0 ? 0 : ((p.win / total) * 100).toFixed(1);
-            tbody.innerHTML += `<tr>
-                <td>${name}</td>
-                <td>${p.win}</td>
-                <td>${p.loss}</td>
-                <td>${rate}%</td>
-            </tr>`;
-        });
+        // 試合履歴リストの描画
+        const history = getHistory();
+        const historyList = document.getElementById('matchHistoryList');
+        historyList.innerHTML = '';
+
+        if(history.length === 0) {
+            historyList.innerHTML = '<div style="text-align:center; color:#999; padding: 10px;">履歴がありません</div>';
+        } else {
+            // 新しい試合が上に来るように逆順で表示
+            [...history].reverse().forEach((match, index) => {
+                const matchNum = history.length - index;
+                const winIcon = match.winner === 'blue' ? '🟦 青' : '🟥 赤';
+                const blueText = match.blue.join('、');
+                const redText = match.red.join('、');
+
+                historyList.innerHTML += `
+                    <div class="history-item">
+                        <span style="color:#888; font-size:11px;">[${match.time}] 第${matchNum}試合</span><br>
+                        <b>👑 勝者: ${winIcon}</b><br>
+                        🟦 ${blueText}<br>
+                        🟥 ${redText}
+                    </div>
+                `;
+            });
+        }
     }
 
     function clearStats() {
-        if(confirm("すべての戦績データを削除しますか？")) {
+        if(confirm("すべての戦績と試合履歴を完全に削除しますか？\n（※元には戻せません）")) {
             localStorage.removeItem('compassPlayerStats');
+            localStorage.removeItem('compassMatchHistory');
             renderStats();
         }
     }
