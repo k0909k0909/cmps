@@ -68,8 +68,10 @@
 
         /* 試合履歴エリア */
         .history-list { text-align: left; font-size: 13px; max-height: 250px; overflow-y: auto; background: #fff; padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin-top: 10px;}
-        .history-item { border-bottom: 1px dashed #ccc; padding: 8px 0; line-height: 1.5;}
+        .history-item { position: relative; border-bottom: 1px dashed #ccc; padding: 10px 45px 10px 0; line-height: 1.5; }
         .history-item:last-child { border-bottom: none; }
+        .btn-undo { position: absolute; right: 0; top: 10px; background-color: #ff6b6b; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .btn-undo:hover { background-color: #e05e5e; }
 
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 200; justify-content: center; align-items: center; }
         .modal-content { background: #fff; width: 90%; max-width: 500px; max-height: 80vh; border-radius: 10px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; text-align: left; position: relative; }
@@ -247,7 +249,6 @@
     }
 
     function recordWin(winner, btn) {
-        // 1. プレイヤーの勝率を更新
         const stats = getStats();
         const winningTeam = winner === 'blue' ? currentMatchPlayers.blue : currentMatchPlayers.red;
         const losingTeam = winner === 'blue' ? currentMatchPlayers.red : currentMatchPlayers.blue;
@@ -262,27 +263,50 @@
         });
         localStorage.setItem('compassPlayerStats', JSON.stringify(stats));
 
-        // 2. 試合履歴を保存
         const history = getHistory();
-        const now = new Date();
-        const timeString = `${now.getMonth() + 1}/${now.getDate()} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-        
         history.push({
-            time: timeString,
             blue: currentMatchPlayers.blue,
             red: currentMatchPlayers.red,
             winner: winner
         });
         localStorage.setItem('compassMatchHistory', JSON.stringify(history));
 
-        // 3. ボタンの表示を一時的に切り替えて保存完了を知らせる
         const originalText = btn.innerText;
         btn.innerText = "✅ 記録";
         setTimeout(() => { btn.innerText = originalText; }, 1000);
     }
 
+    // --- 個別の試合履歴を削除する機能 ---
+    function deleteMatchHistory(index) {
+        if(!confirm("この試合の記録を取り消しますか？\n（勝率データも元に戻ります）")) return;
+
+        const history = getHistory();
+        const stats = getStats();
+        
+        if (index < 0 || index >= history.length) return;
+
+        const match = history[index];
+        const winningTeam = match.winner === 'blue' ? match.blue : match.red;
+        const losingTeam = match.winner === 'blue' ? match.red : match.blue;
+
+        // 勝敗データを元に戻す
+        winningTeam.forEach(name => {
+            if(stats[name] && stats[name].win > 0) stats[name].win--;
+        });
+        losingTeam.forEach(name => {
+            if(stats[name] && stats[name].loss > 0) stats[name].loss--;
+        });
+
+        // 履歴から削除
+        history.splice(index, 1);
+
+        localStorage.setItem('compassPlayerStats', JSON.stringify(stats));
+        localStorage.setItem('compassMatchHistory', JSON.stringify(history));
+        
+        renderStats(); // 画面を更新
+    }
+
     function renderStats() {
-        // プレイヤー勝率表の描画
         const stats = getStats();
         const tbody = document.getElementById('statsTableBody');
         tbody.innerHTML = '';
@@ -305,7 +329,6 @@
             });
         }
 
-        // 試合履歴リストの描画
         const history = getHistory();
         const historyList = document.getElementById('matchHistoryList');
         historyList.innerHTML = '';
@@ -313,16 +336,16 @@
         if(history.length === 0) {
             historyList.innerHTML = '<div style="text-align:center; color:#999; padding: 10px;">履歴がありません</div>';
         } else {
-            // 新しい試合が上に来るように逆順で表示
-            [...history].reverse().forEach((match, index) => {
-                const matchNum = history.length - index;
+            // 新しい順に表示しつつ、元の配列のインデックスを保持して削除ボタンに渡す
+            [...history].reverse().forEach((match, reversedIndex) => {
+                const originalIndex = history.length - 1 - reversedIndex;
                 const winIcon = match.winner === 'blue' ? '🟦 青' : '🟥 赤';
                 const blueText = match.blue.join('、');
                 const redText = match.red.join('、');
 
                 historyList.innerHTML += `
                     <div class="history-item">
-                        <span style="color:#888; font-size:11px;">[${match.time}] 第${matchNum}試合</span><br>
+                        <button class="btn-undo" onclick="deleteMatchHistory(${originalIndex})">取消</button>
                         <b>👑 勝者: ${winIcon}</b><br>
                         🟦 ${blueText}<br>
                         🟥 ${redText}
@@ -386,7 +409,6 @@
         let pool = shuffleArray(players);
         let playing = [];
 
-        // 連続観戦防止
         let guaranteed = pool.filter(p => previousExcluded.includes(p));
         let others = pool.filter(p => !previousExcluded.includes(p));
         playing = guaranteed.concat(others).slice(0, teamSize * 2);
