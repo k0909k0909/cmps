@@ -64,6 +64,18 @@
         
         .map-result { font-size: 20px; font-weight: bold; color: #2e8b57; padding-top: 15px; text-align: center; }
         .hidden { display: none !important; }
+
+        /* パッチノートボタン（右下固定） */
+        .btn-patch { position: fixed; bottom: 20px; right: 20px; background-color: #333; color: white; border: none; padding: 12px 18px; border-radius: 50px; cursor: pointer; font-size: 14px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.3); z-index: 100; transition: 0.3s; }
+        .btn-patch:hover { background-color: #555; transform: translateY(-2px); }
+
+        /* モーダル（ポップアップ）のデザイン */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 200; justify-content: center; align-items: center; }
+        .modal-content { background: #fff; width: 90%; max-width: 500px; max-height: 80vh; border-radius: 10px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; text-align: left; position: relative; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px; }
+        .modal-header h2 { margin: 0; font-size: 20px; color: #333; }
+        .close-modal { background: none; border: none; font-size: 28px; cursor: pointer; color: #666; padding: 0; line-height: 1; }
+        .modal-body { overflow-y: auto; font-size: 14px; line-height: 1.6; white-space: pre-wrap; color: #444; flex-grow: 1; padding-right: 10px; }
     </style>
 </head>
 <body>
@@ -164,16 +176,28 @@
     </div>
 </div>
 
+<button type="button" class="btn-patch" onclick="openPatchNotes()">📝 パッチノート</button>
+
+<div id="patchNoteModal" class="modal-overlay" onclick="closePatchNotes(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h2>📝 パッチノート</h2>
+            <button class="close-modal" onclick="closePatchNotes()">&times;</button>
+        </div>
+        <div id="patchNoteBody" class="modal-body">読み込み中...</div>
+    </div>
+</div>
+
 <script>
+    let previousExcluded = [];
+
     window.onload = function() {
         try {
             const savedUrl = localStorage.getItem('compassWebhookUrl');
             if(savedUrl) {
                 document.getElementById('webhookUrl').value = savedUrl;
             }
-        } catch (error) {
-            console.log("設定の読み込みをスキップしました");
-        }
+        } catch (error) {}
     };
 
     function saveWebhook() {
@@ -334,18 +358,41 @@
             return false;
         }
 
-        const shuffled = shuffleArray(players);
-        const selectedPlayers = shuffled.slice(0, requiredPlayers);
-        const excluded = shuffled.slice(requiredPlayers);
+        let guaranteed = [];
+        let pool = [];
 
-        const blueTeam = selectedPlayers.slice(0, teamSize);
-        const redTeam = selectedPlayers.slice(teamSize, requiredPlayers);
+        players.forEach(p => {
+            if (previousExcluded.includes(p)) {
+                guaranteed.push(p);
+            } else {
+                pool.push(p);
+            }
+        });
+
+        if (guaranteed.length > requiredPlayers) {
+            guaranteed = shuffleArray(guaranteed);
+            const excess = guaranteed.splice(requiredPlayers);
+            pool = pool.concat(excess);
+        }
+
+        pool = shuffleArray(pool);
+        const neededFromPool = requiredPlayers - guaranteed.length;
+        const selectedFromPool = pool.slice(0, neededFromPool);
+        const newlyExcluded = pool.slice(neededFromPool);
+
+        let playingRoster = guaranteed.concat(selectedFromPool);
+        playingRoster = shuffleArray(playingRoster);
+
+        previousExcluded = [...newlyExcluded];
+
+        const blueTeam = playingRoster.slice(0, teamSize);
+        const redTeam = playingRoster.slice(teamSize, requiredPlayers);
 
         document.getElementById('blueTeam').innerHTML = blueTeam.map(name => `<li>${name}</li>`).join('');
         document.getElementById('redTeam').innerHTML = redTeam.map(name => `<li>${name}</li>`).join('');
         
         const excludedEl = document.getElementById('excludedPlayers');
-        excludedEl.innerText = excluded.length > 0 ? "👀 観戦/お休み: " + excluded.join(" , ") : "";
+        excludedEl.innerText = newlyExcluded.length > 0 ? "👀 観戦: " + newlyExcluded.join(" , ") : "";
         return true;
     }
 
@@ -466,6 +513,33 @@
         }).catch(err => {
             alert("コピーに失敗しました。");
         });
+    }
+
+    // --- パッチノート用の関数 ---
+    function openPatchNotes() {
+        const modal = document.getElementById('patchNoteModal');
+        const body = document.getElementById('patchNoteBody');
+        modal.style.display = 'flex';
+        body.innerText = "読み込み中...";
+
+        fetch('patchnotes.txt?' + new Date().getTime())
+            .then(response => {
+                if (!response.ok) throw new Error('File not found');
+                return response.text();
+            })
+            .then(text => {
+                body.innerText = text;
+            })
+            .catch(err => {
+                body.innerText = "パッチノートが見つかりませんでした。";
+            });
+    }
+
+    function closePatchNotes(e) {
+
+        if (e === undefined || e.target.id === 'patchNoteModal' || e.currentTarget.className === 'close-modal') {
+            document.getElementById('patchNoteModal').style.display = 'none';
+        }
     }
 </script>
 
