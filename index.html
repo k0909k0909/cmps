@@ -31,9 +31,11 @@
         summary { font-weight: bold; cursor: pointer; outline: none; font-size: 15px; padding: 5px 0; }
         .btn-small { background-color: #777; color: white; border: none; padding: 8px 12px; font-size: 13px; border-radius: 3px; cursor: pointer; margin-right: 5px; }
         
+        /* マップ選択エリアのデザイン調整 */
         .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 13px; margin-top: 10px; }
-        .checkbox-grid label { display: flex; align-items: center; cursor: pointer; padding: 3px 0;}
-        .checkbox-grid input { margin-right: 8px; width: 18px; height: 18px; }
+        /* 文字が長くて折り返されても綺麗に見えるように flex-start に変更 */
+        .checkbox-grid label { display: flex; align-items: flex-start; cursor: pointer; padding: 3px 0; line-height: 1.4; }
+        .checkbox-grid input { margin-right: 8px; width: 18px; height: 18px; flex-shrink: 0; margin-top: 0; }
 
         #errorMessage { color: red; font-weight: bold; font-size: 14px; margin-bottom: 10px; display: none; }
 
@@ -59,19 +61,20 @@
         .btn-copy { background-color: #333; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; margin-bottom: 8px; }
         .btn-discord { background-color: #5865F2; color: white; border: none; padding: 12px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; }
 
-        /* 戦績テーブル */
         .stats-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
         .stats-table th, .stats-table td { border: 1px solid #ddd; padding: 10px; text-align: center; }
         .stats-table th { background-color: #f2f2f2; cursor: pointer; user-select: none; transition: 0.2s; }
         .stats-table th:hover { background-color: #e0e0e0; }
         .stats-table tr:nth-child(even) { background-color: #fafafa; }
 
-        /* 試合履歴エリア */
         .history-list { text-align: left; font-size: 13px; max-height: 250px; overflow-y: auto; background: #fff; padding: 10px; border: 1px solid #ddd; border-radius: 5px; margin-top: 10px;}
         .history-item { position: relative; border-bottom: 1px dashed #ccc; padding: 10px 45px 10px 0; line-height: 1.5; }
         .history-item:last-child { border-bottom: none; }
         .btn-undo { position: absolute; right: 0; top: 10px; background-color: #ff6b6b; color: white; border: none; padding: 5px 10px; border-radius: 3px; cursor: pointer; font-size: 12px; font-weight: bold; }
         .btn-undo:hover { background-color: #e05e5e; }
+
+        .custom-map-area { margin-top: 15px; padding-top: 15px; border-top: 1px dashed #ccc; }
+        .custom-map-row { display: flex; align-items: center; margin-bottom: 8px; }
 
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 200; justify-content: center; align-items: center; }
         .modal-content { background: #fff; width: 90%; max-width: 500px; max-height: 80vh; border-radius: 10px; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; text-align: left; position: relative; }
@@ -122,28 +125,30 @@
                 <button type="button" class="btn-small" onclick="toggleAllMaps(true)">全ON</button>
                 <button type="button" class="btn-small" onclick="toggleAllMaps(false)">全OFF</button>
             </div>
+            
             <div id="mapCheckboxes" class="checkbox-grid">
-                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="でらクランクストリート" checked>でらクランク</label>
-                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="けっこいスターパーク" checked>けっこい</label>
-                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="東西たかさん広場" checked>たかさん</label>
-                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="グレートウォール" checked>グレウォ</label>
-                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="立体交差のある風景" checked>立体交差</label>
-                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="光と闇のライブステージ" checked>ライステ</label>
-                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="妖華帝都ケルパーズの散歩道" checked>ケルパーズ</label>
-                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="ちゅら島リゾート" checked>ちゅら島</label>
-                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="って〜！つっぺる工事現場" checked>つっぺる</label>
-                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="太鼓で祭りだドーン！" checked>太鼓</label>
-                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="おいでやす鳥居通り" checked>鳥居</label>
-                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="かけだせ！じっぱか城" checked>じっぱか</label>
-                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="どっひゃぁ〜！なっから遺跡" checked>なっから</label>
-                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="Castle of the Silver Feet" checked>銀足</label>
-                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="Hello :-) irregular World" checked>イレギュラー</label>
-                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="なまらモーモーパーク" checked>モーモー</label>
-                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="おっかねぇ！氷焔神域ケイオスブルク" checked>ケイオス</label>
-                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="バリバリ！てげてげモーターウェイ" checked>てげてげ</label>
-                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="いこっさ！ダイダイダイナソー博物館" checked>ダイナソー</label>
-                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="【ストヘス区】急襲戦闘区域">ストヘス区</label>
+                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="でらクランクストリート" checked>でらクランクストリート</label>
+                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="けっこいスターパーク" checked>けっこいスターパーク</label>
+                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="東西たかさん広場" checked>東西たかさん広場</label>
+                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="グレートウォール" checked>グレートウォール</label>
+                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="立体交差のある風景" checked>立体交差のある風景</label>
+                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="光と闇のライブステージ" checked>光と闇のライブステージ</label>
+                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="妖華帝都ケルパーズの散歩道" checked>妖華帝都ケルパーズの散歩道</label>
+                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="ちゅら島リゾート" checked>ちゅら島リゾート</label>
+                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="って〜！つっぺる工事現場" checked>って〜！つっぺる工事現場</label>
+                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="太鼓で祭りだドーン！" checked>太鼓で祭りだドーン！</label>
+                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="おいでやす鳥居通り" checked>おいでやす鳥居通り</label>
+                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="かけだせ！じっぱか城" checked>かけだせ！じっぱか城</label>
+                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="どっひゃぁ〜！なっから遺跡" checked>どっひゃぁ〜！なっから遺跡</label>
+                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="Castle of the Silver Feet" checked>Castle of the Silver Feet</label>
+                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="Hello :-) irregular World" checked>Hello :-) irregular World</label>
+                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="なまらモーモーパーク" checked>なまらモーモーパーク</label>
+                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="おっかねぇ！氷焔神域ケイオスブルク" checked>おっかねぇ！氷焔神域ケイオスブルク</label>
+                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="バリバリ！てげてげモーターウェイ" checked>バリバリ！てげてげモーターウェイ</label>
+                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="いこっさ！ダイダイダイナソー博物館" checked>いこっさ！ダイダイダイナソー博物館</label>
+                <label><input type="checkbox" class="map-checkbox normal-map-checkbox" value="【ストヘス区】急襲戦闘区域">【ストヘス区】急襲戦闘区域</label>
             </div>
+            
             <div class="custom-map-area">
                 <div id="customMapList"></div>
                 <button type="button" class="btn-small" style="background-color: #4CAF50; margin-top:10px;" onclick="addCustomMap()">＋ 自由枠を追加</button>
@@ -206,7 +211,7 @@
         <h3 style="margin-top: 30px;">📜 試合履歴</h3>
         <div id="matchHistoryList" class="history-list"></div>
 
-        <button class="btn-small" style="background-color: #ff6b6b; margin-top: 20px;" onclick="clearStats()">すべてのデータをリセット</button>
+        <button class="btn-small" style="background-color: #ff6b6b; margin-top: 20px;" onclick="clearStats()">すべてのデータを取り消す</button>
     </div>
 </div>
 
@@ -277,7 +282,7 @@
     }
 
     function deleteMatchHistory(index) {
-        if(!confirm("取り消してもよいですか？")) return;
+        if(!confirm("各試合の場合 取り消してもよいですか？")) return;
 
         const history = getHistory();
         const stats = getStats();
@@ -303,7 +308,6 @@
         renderStats();
     }
 
-    // --- 並び替え機能 ---
     function setSort(key) {
         if (currentSort.key === key) {
             currentSort.desc = !currentSort.desc;
